@@ -1,0 +1,44 @@
+# Variables de entorno. Solo .env.example se versiona.
+.env
+.env.local
+.env.*.local
+
+# Java / Maven
+target/
+*.class
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+
+# Resultados de pruebas y cobertura
+coverage/
+test-results/
+playwright-report/
+**/target/surefire-reports/
+**/target/failsafe-reports/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.settings/
+.project
+.classpath
+.factorypath
+nbproject/private/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Registros
+*.log

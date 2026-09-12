@@ -1,0 +1,19 @@
+# 276 MB y 22.717 archivos que se subirian al daemon en cada build. Y peor:
+# node_modules se compila para la plataforma del anfitrion, asi que copiar las
+# dependencias de Windows dentro de un contenedor Linux rompe los binarios
+# nativos (@esbuild/win32-x64 frente a @esbuild/linux-x64).
+node_modules/
+.angular/
+dist/
+
+.git
+.gitignore
+.vscode/
+coverage/
+test-results/
+playwright-report/
+*.log
+
+Dockerfile
+.dockerignore
+README.md

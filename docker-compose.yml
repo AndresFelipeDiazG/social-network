@@ -1,0 +1,153 @@
+# Orquestacion para desarrollo local. Este archivo y .env son el entorno de
+# despliegue, no forman parte de ningun microservicio: en produccion los
+# reemplazan los manifiestos del orquestador y un gestor de secretos.
+#
+# Las credenciales usan ${VAR:?mensaje} en lugar de un valor por defecto. Si
+# falta el .env, Compose aborta indicando que hacer; con un valor por defecto
+# el fallo aparecería tres capas mas abajo como un error de autenticacion.
+
+name: social-network
+
+services:
+
+  # ---------------------------------------------------------------- Bases de datos
+  # Una instancia por servicio. El aislamiento real hace imposible que un
+  # servicio consulte los datos del otro, en lugar de confiar en la disciplina.
+
+  postgres-auth:
+    image: postgres:16-alpine
+    container_name: social-postgres-auth
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_AUTH_DB:-social_auth}
+      POSTGRES_USER: "${POSTGRES_AUTH_USER:?falta .env — ejecuta: cp .env.example .env}"
+      POSTGRES_PASSWORD: "${POSTGRES_AUTH_PASSWORD:?falta .env — ejecuta: cp .env.example .env}"
+    ports:
+      - "${POSTGRES_AUTH_PORT:-5433}:5432"
+    volumes:
+      - postgres-auth-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [social-network]
+
+  postgres-posts:
+    image: postgres:16-alpine
+    container_name: social-postgres-posts
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_POSTS_DB:-social_posts}
+      POSTGRES_USER: "${POSTGRES_POSTS_USER:?falta .env — ejecuta: cp .env.example .env}"
+      POSTGRES_PASSWORD: "${POSTGRES_POSTS_PASSWORD:?falta .env — ejecuta: cp .env.example .env}"
+    ports:
+      - "${POSTGRES_POSTS_PORT:-5434}:5432"
+    volumes:
+      - postgres-posts-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [social-network]
+
+  # ------------------------------------------------------------------ Microservicios
+
+  auth-service:
+    build:
+      context: ./backend/auth-service
+    image: social/auth-service:1.0.0
+    container_name: social-auth-service
+    restart: unless-stopped
+    environment:
+      # DB_HOST usa el nombre del servicio, que Compose registra como DNS en la
+      # red interna. Y el puerto 5432 (el interno), no el publicado arriba.
+      DB_HOST: postgres-auth
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_AUTH_DB:-social_auth}
+      DB_USER: "${POSTGRES_AUTH_USER:?falta .env}"
+      DB_PASSWORD: "${POSTGRES_AUTH_PASSWORD:?falta .env}"
+      JWT_SECRET: "${JWT_SECRET:?falta .env — genera el secreto con: openssl rand -base64 48}"
+      JWT_ISSUER: ${JWT_ISSUER:-social-auth-service}
+      JWT_EXPIRATION_MINUTES: ${JWT_EXPIRATION_MINUTES:-60}
+    ports:
+      - "${AUTH_SERVICE_PORT:-8081}:8081"
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+    networks: [social-network]
+
+  post-service:
+    build:
+      context: ./backend/post-service
+    image: social/post-service:1.0.0
+    container_name: social-post-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres-posts
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_POSTS_DB:-social_posts}
+      DB_USER: "${POSTGRES_POSTS_USER:?falta .env}"
+      DB_PASSWORD: "${POSTGRES_POSTS_PASSWORD:?falta .env}"
+      # Solo el secreto y el emisor: post-service verifica firmas, no las emite,
+      # asi que no necesita saber cuanto duran los tokens.
+      JWT_SECRET: "${JWT_SECRET:?falta .env}"
+      JWT_ISSUER: ${JWT_ISSUER:-social-auth-service}
+    ports:
+      - "${POST_SERVICE_PORT:-8082}:8082"
+    depends_on:
+      postgres-posts:
+        condition: service_healthy
+    networks: [social-network]
+
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+    image: social/api-gateway:1.0.0
+    container_name: social-api-gateway
+    restart: unless-stopped
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:8081
+      POST_SERVICE_URL: http://post-service:8082
+      JWT_SECRET: "${JWT_SECRET:?falta .env}"
+      JWT_ISSUER: ${JWT_ISSUER:-social-auth-service}
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      post-service:
+        condition: service_healthy
+    networks: [social-network]
+
+  # ---------------------------------------------------------------------- Frontend
+  # nginx sirve los estaticos y hace de proxy inverso para /api. Al compartir
+  # origen con la API, CORS deja de existir en lugar de configurarse.
+
+  frontend:
+    build:
+      context: ./frontend
+    image: social/frontend:1.0.0
+    container_name: social-frontend
+    restart: unless-stopped
+    environment:
+      # Todo esto llega al navegador y es publico. Nunca un secreto aqui.
+      API_BASE_URL: ${API_BASE_URL:-/api}
+      APP_NAME: ${APP_NAME:-Red Social}
+      POSTS_PAGE_SIZE: ${POSTS_PAGE_SIZE:-20}
+      SESSION_EXPIRY_WARNING_SECONDS: ${SESSION_EXPIRY_WARNING_SECONDS:-60}
+    ports:
+      - "${FRONTEND_PORT:-4200}:80"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    networks: [social-network]
+
+volumes:
+  postgres-auth-data:
+  postgres-posts-data:
+
+networks:
+  social-network:
+    driver: bridge

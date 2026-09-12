@@ -1,0 +1,12 @@
+# Se lee desde la raiz del contexto de build (esta carpeta). Un .dockerignore en
+# la raiz del repositorio no se leeria nunca con este contexto.
+target/
+.git
+.gitignore
+.gitattributes
+.idea/
+*.iml
+*.log
+HELP.md
+Dockerfile
+.dockerignore
