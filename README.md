@@ -3,9 +3,6 @@
 Red social minima con arquitectura de microservicios: autenticacion con JWT, muro
 de publicaciones y creacion de mensajes.
 
-> **Estado.** Infraestructura, contenedores y configuracion completos y
-> verificados. La implementacion de los servicios y del frontend esta en curso.
-
 ---
 
 ## Arquitectura
@@ -100,16 +97,76 @@ Los crea Flyway al arrancar la aplicacion, con una publicacion cada uno.
 | Metodo | Ruta | Descripcion |
 |---|---|---|
 | `POST` | `/api/auth/login` | Login con credenciales en el cuerpo. Devuelve el JWT. |
-| `GET` | `/api/auth/login` | Login con cabecera `Authorization: Basic`. Mismo resultado. |
+| `GET` | `/api/auth/login` | Login con cabecera `Authorization: Basic`. La que usa el frontend. |
 | `GET` | `/api/auth/me` | Usuario correspondiente al token actual. |
 | `GET` | `/api/posts` | Lista publicaciones. Parametros: `scope` (ALL, OTHERS, MINE), `page`, `size`. |
 | `POST` | `/api/posts` | Crea una publicacion. La fecha por defecto es el instante de guardado. |
+| `PUT` | `/api/posts/{id}/like` | Marca la publicacion con me gusta. Idempotente. |
+| `DELETE` | `/api/posts/{id}/like` | Retira el me gusta. Tambien idempotente. |
+| `POST` | `/api/posts/images` | Sube una imagen (multipart, 2 MB) y devuelve su identificador. |
+| `GET` | `/api/posts/images/{id}` | Devuelve los bytes de la imagen. Publica. |
 
 Comprobacion de extremo a extremo:
 
 ```bash
 ./scripts/smoke-test.sh
 ```
+
+---
+
+## Frontend
+
+Angular 21 con componentes autonomos, senales y deteccion de cambios sin Zone.js.
+
+| Pantalla | Ruta | Contenido |
+|---|---|---|
+| Entrada | `/entrar` | Usuario y contrasena, con boton para revelarla. Lista los usuarios de prueba. |
+| Muro | `/muro` | Publicaciones, compositor, filtros, buscador y carga incremental. |
+
+Las dos se cargan en diferido: el arranque baja 66 kB comprimidos y la pantalla
+que toque, no las dos.
+
+El estado vive en dos `signalStore` de NgRx:
+
+- **`AuthStore`**, en la raiz. Token, usuario y sesion persistida en
+  `localStorage` con su instante de caducidad. Una sesion vencida se descarta al
+  arrancar, sin esperar al primer 401.
+- **`PostsStore`**, provisto en la pagina del muro. Publicaciones, filtro,
+  pagina y errores. Se destruye con el componente, asi que al salir no queda el
+  muro de la sesion anterior en memoria.
+
+Decisiones que no se ven en una captura:
+
+- El filtro por defecto es **de otros usuarios**, que es literalmente lo que pide
+  el enunciado. `Todas` y `Mias` quedan como filtro explicito.
+- El paginado es **incremental** (`Cargar mas publicaciones` con un contador
+  `Mostrando X de Y`), no paginas numeradas: en un muro que se recorre hacia
+  abajo, «ir a la pagina 3» no significa nada. Descarta repetidas por `id`,
+  porque una publicacion nueva desplaza la ventana entre dos peticiones.
+- El buscador filtra **sobre lo ya cargado**, y el texto lo dice. El backend no
+  expone busqueda, y fingir que busca en todo el muro seria mentir en la interfaz.
+- Al publicar desde el filtro `De otros` se pasa a `Todas`, porque la propia
+  publicacion no cabe en ese filtro y el usuario espera verla.
+- Tema claro, oscuro y del sistema. Los tokens son propiedades personalizadas de
+  CSS: cambiar de tema no recompila nada y el modo «sistema» no escucha eventos,
+  deja mandar a `prefers-color-scheme`.
+- Dos columnas en pantalla ancha: el muro no llena una pantalla de 1440 px por
+  si solo. La lateral se oculta por debajo de 1000 px y el muro se queda en 640,
+  que es el ancho de linea comodo de leer.
+- El me gusta se pinta antes de que responda el servidor y se deshace si falla.
+  El endpoint es idempotente, asi que un reintento no descuadra el recuento.
+- Las imagenes se suben en una peticion aparte que devuelve un identificador, y
+  la publicacion se crea despues con el. Convertir `POST /api/posts` en multipart
+  habria roto el contrato JSON que ya estaba probado.
+- El compositor lleva una paleta de emojis que inserta donde este el cursor, no
+  al final. Es una paleta corta y fija: un catalogo completo pide busqueda,
+  categorias y varios cientos de kilobytes de datos.
+- La barra superior solo muestra el avatar; cerrar sesion vive dentro del menu que
+  se despliega al pulsarlo, no suelto al lado.
+- Toda la interfaz usa Inter, servida desde el propio bundle y no desde una CDN:
+  la aplicacion tiene que verse igual sin salida a internet.
+- Los errores llegan en `ProblemDetail` (RFC 7807) y se muestran tal cual: el
+  mensaje ya viene redactado desde el backend, en un solo idioma y un solo sitio.
 
 ---
 
@@ -123,8 +180,16 @@ cd backend/auth-service
 ```
 
 ```bash
-cd frontend && npm test
+cd frontend && npm test    # Vitest, sin navegador
 ```
+
+| Modulo | Pruebas |
+|---|---|
+| auth-service | 38 |
+| post-service | 70 |
+| api-gateway | 19 |
+| frontend | 74 |
+| **Total** | **201** |
 
 La separacion es deliberada: `*Test.java` corre con surefire y no necesita
 Docker, mientras `*IT.java` corre con failsafe y levanta Postgres con
@@ -144,7 +209,7 @@ prueba, que es como acaba desactivandose una suite entera.
 │   ├── post-service/         publicaciones
 │   └── api-gateway/          punto de entrada unico
 ├── frontend/                 Angular 21 + NgRx SignalStore
-├── db/                       scripts SQL (entregable)
+├── db/                       scripts SQL: esquema y usuarios de prueba
 ├── scripts/                  prueba de humo
 └── docs/                     documentacion y diagramas
 ```
