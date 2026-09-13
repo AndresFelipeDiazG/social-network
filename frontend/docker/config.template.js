@@ -5,6 +5,5 @@
 window.__APP_CONFIG__ = {
   apiBaseUrl: '${API_BASE_URL}',
   appName: '${APP_NAME}',
-  postsPageSize: ${POSTS_PAGE_SIZE},
-  sessionExpiryWarningSeconds: ${SESSION_EXPIRY_WARNING_SECONDS}
+  postsPageSize: ${POSTS_PAGE_SIZE}
 };
