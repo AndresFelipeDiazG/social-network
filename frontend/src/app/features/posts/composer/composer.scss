@@ -1,0 +1,164 @@
+.composer {
+  display: flex;
+  gap: 14px;
+  padding: 20px 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  background: var(--ground);
+  box-shadow: var(--shadow-card);
+}
+
+.composer__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.composer__input {
+  display: block;
+  width: 100%;
+  /* Alto de reposo: una caja de una linea no invita a escribir, y ademas deja
+     el pie pegado al texto en cuanto se escriben dos frases. */
+  min-height: 76px;
+  max-height: 260px;
+  padding: 8px 0 0;
+  border: 0;
+  background: none;
+  color: var(--fg-primary);
+  font-size: 1rem;
+  line-height: 1.55;
+  resize: none;
+  outline: none;
+  field-sizing: content;
+}
+
+.composer__input::placeholder {
+  color: var(--fg-muted);
+}
+
+.composer__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.composer__tools,
+.composer__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.composer__counter {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
+}
+
+.composer__counter--warn {
+  color: var(--fg-secondary);
+}
+
+.composer__counter--over {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.composer__confirmed {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--accent-text);
+}
+
+.composer__send {
+  height: 40px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: filter 120ms ease;
+}
+
+.composer__send:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+@media (max-width: 520px) {
+  .composer {
+    padding: 16px;
+  }
+
+}
+
+.composer__file {
+  display: none;
+}
+
+.tool {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--fg-muted);
+}
+
+.tool:hover:not(:disabled),
+.tool--on {
+  border-color: var(--border);
+  color: var(--accent-text);
+}
+
+.tool svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.preview {
+  position: relative;
+  display: inline-block;
+  margin-top: 12px;
+}
+
+.preview__image {
+  display: block;
+  max-width: 100%;
+  max-height: 220px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.preview__remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: rgb(0 0 0 / 62%);
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.preview__error {
+  margin: 10px 0 0;
+  font-size: 0.75rem;
+  color: var(--danger);
+}

@@ -1,0 +1,70 @@
+<section class="composer">
+  <app-avatar [name]="author()" />
+
+  <div class="composer__body">
+    <textarea
+      #area
+      class="composer__input"
+      rows="2"
+      [value]="message()"
+      (input)="write($any($event.target).value)"
+      (keydown)="onKeydown($event)"
+      [disabled]="publishing()"
+      placeholder="¿Qué está pasando?"
+      aria-label="Mensaje de la publicación"
+    ></textarea>
+
+    @if (imagePreview()) {
+      <div class="preview">
+        <img class="preview__image" [src]="imagePreview()" alt="Imagen que vas a publicar" />
+        <button type="button" class="preview__remove" (click)="clearImage()"
+                aria-label="Quitar la imagen">&times;</button>
+      </div>
+    }
+
+    @if (imageError()) {
+      <p class="preview__error" role="alert">{{ imageError() }}</p>
+    }
+
+    <div class="composer__foot">
+      <div class="composer__tools">
+        <app-emoji-picker [disabled]="publishing()" (pick)="insertEmoji($event)" />
+
+        <button
+          type="button"
+          class="tool"
+          [class.tool--on]="image()"
+          [disabled]="publishing()"
+          title="Añadir imagen"
+          aria-label="Añadir imagen"
+          (click)="file.click()"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3.5" y="5" width="17" height="14" rx="2.2" />
+            <circle cx="9" cy="10" r="1.6" />
+            <path d="M4 16.5l4.5-4 3.5 3 3-2.5 4.5 4" />
+          </svg>
+        </button>
+
+        <input #file type="file" class="composer__file" [accept]="acceptedTypes"
+               (change)="chooseImage(file)" aria-hidden="true" tabindex="-1" />
+
+      </div>
+
+      <div class="composer__actions">
+        @if (confirmed()) {
+          <span class="composer__confirmed" role="status">Publicado</span>
+        } @else {
+          <span class="composer__counter" [class.composer__counter--warn]="nearLimit()"
+                [class.composer__counter--over]="remaining() < 0">
+            {{ remaining() }}
+          </span>
+        }
+
+        <button type="button" class="composer__send" [disabled]="!canPublish()" (click)="submit()">
+          {{ publishing() ? 'Publicando...' : 'Publicar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

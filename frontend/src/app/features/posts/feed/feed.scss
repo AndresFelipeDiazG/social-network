@@ -1,0 +1,192 @@
+.page {
+  min-height: 100dvh;
+  background: var(--surface);
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--border);
+  background: var(--ground);
+}
+
+.topbar__inner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 64px;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* La busqueda ocupa el centro de la barra y no un hueco entre dos bloques: es
+   el unico control que se usa a menudo con el muro ya cargado. */
+.search {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  max-width: 460px;
+  margin: 0 auto;
+}
+
+.search__icon {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: var(--fg-muted);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.search__input {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px 0 40px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--fg-primary);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.search__input::placeholder {
+  color: var(--fg-muted);
+}
+
+.search__input:focus {
+  border-color: var(--accent);
+  background: var(--ground);
+}
+
+.topbar__user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Dos columnas: el muro no llena una pantalla ancha por si solo. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 288px;
+  gap: 24px;
+  align-items: start;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* La columna del muro no crece sin limite cuando se oculta el lateral: una
+   linea de texto de 800px se lee mal, se pierde el salto de renglon. */
+.feed {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.aside {
+  position: sticky;
+  top: 84px;
+}
+
+.feed__alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.retry {
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.empty {
+  margin: 0;
+  padding: 48px 18px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-2xl);
+  color: var(--fg-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 0 36px;
+}
+
+.more__count {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-muted);
+}
+
+.more__button {
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--ground);
+  color: var(--fg-secondary);
+  font-size: 0.8125rem;
+}
+
+.more__button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+@media (max-width: 1000px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aside {
+    display: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .topbar__inner {
+    flex-wrap: wrap;
+    gap: 10px;
+    height: auto;
+    padding: 12px 16px;
+  }
+
+  .search {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .topbar__user {
+    margin-left: auto;
+  }
+
+  .layout {
+    padding: 16px;
+  }
+}
