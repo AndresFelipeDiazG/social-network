@@ -5,6 +5,13 @@
   </header>
 
   <main class="card">
+    <!-- Solo en movil: alli la barra superior desaparece y la marca vive dentro
+         de la tarjeta, que es lo unico que queda en pantalla. -->
+    <header class="card__brand">
+      <app-theme-toggle />
+      <app-brand [name]="appName" [keepName]="true" />
+    </header>
+
     <h1 class="card__title">Bienvenido/a de vuelta</h1>
     <p class="card__subtitle">Ingresa a tu cuenta para ver que hay de nuevo.</p>
 

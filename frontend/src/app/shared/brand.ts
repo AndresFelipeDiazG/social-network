@@ -3,6 +3,9 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 @Component({
   selector: 'app-brand',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // La clase va en el anfitrion porque la encapsulacion de estilos impide que el
+  // componente padre alcance nada de dentro.
+  host: { '[class.brand--keepName]': 'keepName()' },
   template: `
     <span class="brand">
       <span class="brand__mark" aria-hidden="true">
@@ -43,8 +46,10 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       white-space: nowrap;
     }
 
+    /* En una barra estrecha el nombre estorba y basta el simbolo, salvo que quien
+       lo usa pida conservarlo. */
     @media (max-width: 560px) {
-      .brand__name {
+      :host(:not(.brand--keepName)) .brand__name {
         display: none;
       }
     }
@@ -53,4 +58,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 export class Brand {
 
   readonly name = input.required<string>();
+
+  /** Mantiene el nombre visible tambien en pantalla estrecha. */
+  readonly keepName = input(false);
 }

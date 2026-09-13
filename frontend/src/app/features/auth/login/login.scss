@@ -22,6 +22,10 @@
   border-radius: var(--radius-2xl);
 }
 
+.card__brand {
+  display: none;
+}
+
 .card__title {
   margin: 0;
   font-size: 1.5rem;
@@ -210,11 +214,24 @@
   border-color: var(--accent);
 }
 
-@media (max-width: 480px) {
+@media (max-width: 560px) {
+  /* En movil la tarjeta ocupa la pantalla entera: una barra suelta encima solo
+     roba altura, asi que la marca y el tema pasan dentro. */
+  .page__bar {
+    display: none;
+  }
+
+  .card__brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
   .card {
     max-width: none;
     margin: 0;
-    padding: 24px 20px;
+    padding: 22px 20px 28px;
     border: 0;
     border-radius: 0;
     background: var(--ground);
