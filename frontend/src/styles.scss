@@ -1,1 +1,132 @@
-/* You can add global styles to this file, and also import other style files */
+/* Tokens de diseno. Son propiedades personalizadas y no variables de SASS
+   porque se resuelven en tiempo de ejecucion: el modo noche es alternar valores,
+   no recompilar. */
+:root {
+  /* --ground es la superficie elevada (tarjetas, barras, campos) y --surface el
+     fondo sobre el que reposa. La diferencia entre ambos tiene que ser visible:
+     con un 3% de separacion, el hueco entre dos tarjetas blancas desaparece y la
+     columna se lee como un unico bloque. */
+  --ground: #ffffff;
+  --surface: #eaedf1;
+  --accent: #217c27;
+  --accent-text: #217c27;
+  --accent-soft: #e6f2e7;
+  --fg-primary: #1a1a1a;
+  --fg-secondary: #4b5563;
+  --fg-muted: #9ca3af;
+  --fg-inverse: #ffffff;
+  --border: #e5e7eb;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 5%), 0 10px 24px -18px rgb(16 24 40 / 35%);
+
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+
+  /* Inter para todo. Se sirve desde el propio bundle (@fontsource-variable), no
+     desde una CDN: la aplicacion tiene que verse igual sin salida a internet.
+     --font-data es el mismo tipo con cifras tabulares, para que los contadores y
+     las horas no bailen de ancho al cambiar de digito. */
+  --font-body: "Inter Variable", Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: var(--font-body);
+
+  color-scheme: light dark;
+}
+
+/* El acento se aclara en modo noche: el verde oscuro se hunde sobre fondo
+   oscuro, y como texto queda por debajo del contraste minimo. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #191d24;
+    --surface: #0c0e12;
+    --accent: #248a2c;
+    --accent-text: #5bc466;
+    --accent-soft: #16281a;
+    --fg-primary: #f3f4f6;
+    --fg-secondary: #b4bbc6;
+    --fg-muted: #7c8592;
+    --border: #2a2f38;
+    --danger: #f87171;
+    --danger-soft: #2a1517;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground: #191d24;
+  --surface: #0c0e12;
+  --accent: #248a2c;
+  --accent-text: #5bc466;
+  --accent-soft: #16281a;
+  --fg-primary: #f3f4f6;
+  --fg-secondary: #b4bbc6;
+  --fg-muted: #7c8592;
+  --border: #2a2f38;
+  --danger: #f87171;
+  --danger-soft: #2a1517;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--ground);
+  color: var(--fg-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+input,
+textarea {
+  font-family: inherit;
+}
+
+/* Primitivos compartidos por varias pantallas. Viven aqui y no en un componente
+   porque el presupuesto de estilos de angular.json se aplica por componente, y
+   duplicar el boton y el aviso en cada uno lo agota sin necesidad. */
+.btn-primary {
+  height: 42px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: filter 120ms ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.alert {
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 2px solid var(--danger);
+  border-radius: var(--radius-lg);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 0.8125rem;
+}
+
+/* El foco solo se dibuja para quien navega con teclado: :focus-visible lo
+   excluye del clic de raton, donde el anillo sobra. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
