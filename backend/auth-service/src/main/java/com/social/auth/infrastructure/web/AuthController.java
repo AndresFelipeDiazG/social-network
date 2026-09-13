@@ -37,7 +37,7 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "Inicia sesion con las credenciales en el cuerpo",
-            description = "Forma recomendada y la que utiliza el frontend.")
+            description = "Variante POST, equivalente a la anterior.")
     @ApiResponse(responseCode = "400", description = "Falta el usuario o la contrasena",
             content = @Content)
     @ApiResponse(responseCode = "401", description = "Usuario o contrasena incorrectos",
@@ -49,9 +49,9 @@ public class AuthController {
     @GetMapping("/login")
     @Operation(summary = "Inicia sesion con la cabecera Authorization: Basic",
             description = """
-                    Variante GET. Las credenciales viajan en la cabecera y no en la URL,
-                    de modo que no quedan registradas en los logs del servidor, en el
-                    historial del navegador ni en la cabecera Referer.
+                    La que utiliza el frontend. Las credenciales viajan en la cabecera y
+                    no en la URL, de modo que no quedan registradas en los logs del
+                    servidor, en el historial del navegador ni en la cabecera Referer.
                     """)
     @ApiResponse(responseCode = "401", description = "Cabecera ausente, mal formada o credenciales incorrectas",
             content = @Content)
