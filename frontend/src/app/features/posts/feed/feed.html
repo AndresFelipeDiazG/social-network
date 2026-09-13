@@ -1,0 +1,85 @@
+<div class="page">
+  <header class="topbar">
+    <div class="topbar__inner">
+      <app-brand [name]="appName" />
+
+      <div class="search">
+        <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5" />
+          <path d="M16 16l4.5 4.5" />
+        </svg>
+        <input
+          class="search__input"
+          type="search"
+          [value]="posts.query()"
+          (input)="posts.search($any($event.target).value)"
+          [placeholder]="'Buscar en ' + appName + '...'"
+          aria-label="Buscar entre las publicaciones cargadas"
+        />
+      </div>
+
+      <div class="topbar__user">
+        <app-theme-toggle />
+        <app-user-menu [name]="displayName()" [username]="username()" (signOut)="signOut()" />
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <main class="feed">
+      <app-composer [author]="displayName()" />
+
+      <app-feed-filters
+        [scopes]="scopes"
+        [active]="posts.scope()"
+        [busy]="posts.loading()"
+        (select)="posts.load($event)"
+        (refresh)="posts.load()"
+      />
+
+      @if (posts.error()) {
+        <div class="alert feed__alert" role="alert">
+          <span>{{ posts.error() }}</span>
+          <button type="button" class="retry" (click)="posts.load()">Reintentar</button>
+        </div>
+      }
+
+      <section class="list">
+        @if (posts.loading()) {
+          @for (row of skeletons; track row) {
+            <app-post-skeleton />
+          }
+        } @else if (posts.isEmpty()) {
+          <p class="empty">{{ emptyMessage() }}</p>
+        } @else if (noMatches()) {
+          <p class="empty">Ninguna de las {{ posts.loadedCount() }} publicaciones cargadas coincide con la búsqueda.</p>
+        } @else {
+          @for (post of posts.visible(); track post.id) {
+            <app-post-card [post]="post" (toggleLike)="posts.toggleLike($event)" />
+          }
+        }
+      </section>
+
+      @if (!posts.loading() && !posts.isEmpty()) {
+        <footer class="more">
+          <p class="more__count">Mostrando {{ posts.loadedCount() }} de {{ posts.totalCount() }}</p>
+
+          @if (posts.hasMore()) {
+            <button type="button" class="more__button" [disabled]="posts.loadingMore()"
+                    (click)="posts.loadMore()">
+              {{ posts.loadingMore() ? 'Cargando...' : 'Cargar más publicaciones' }}
+            </button>
+          }
+        </footer>
+      }
+    </main>
+
+    <aside class="aside">
+      <app-side-panel
+        [name]="displayName()"
+        [username]="username()"
+        (showMine)="posts.load('MINE')"
+      />
+    </aside>
+  </div>
+</div>

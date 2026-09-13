@@ -228,7 +228,20 @@
     margin-bottom: 24px;
   }
 
+  /* La tarjeta es la pantalla: crece hasta el fondo. Sin esto queda una franja
+     del color de la pagina bajo ella, mas alta cuanto mas alto el telefono. */
+  .page {
+    background: var(--ground);
+  }
+
+  /* El contenido se centra en vertical. Un formulario corto no llena una pantalla
+     alta: el sobrante existe siempre, y repartido arriba y abajo se lee como
+     margen. Empujado a un solo lado se lee como un hueco. */
   .card {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
     max-width: none;
     margin: 0;
     padding: 22px 20px 28px;

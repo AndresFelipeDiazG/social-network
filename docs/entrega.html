@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Red Social — Documentacion de entrega</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+
+  :root {
+    --accent: #217C27;
+    --ink: #1a1a1a;
+    --muted: #555;
+    --line: #d8dbe0;
+    --soft: #f4f6f4;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font: 10.5pt/1.55 "Segoe UI", Inter, system-ui, sans-serif;
+    color: var(--ink);
+  }
+
+  h1 { font-size: 24pt; letter-spacing: -0.02em; margin: 0 0 6px; }
+
+  h2 {
+    font-size: 14pt;
+    margin: 26px 0 10px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid var(--accent);
+    page-break-after: avoid;
+  }
+
+  h3 { font-size: 11.5pt; margin: 18px 0 6px; page-break-after: avoid; }
+
+  p, li { margin: 0 0 8px; }
+  ul, ol { margin: 0 0 10px; padding-left: 20px; }
+
+  code, pre { font-family: "Cascadia Mono", Consolas, monospace; }
+  code { font-size: 9pt; background: var(--soft); padding: 1px 4px; border-radius: 3px; }
+
+  pre {
+    margin: 8px 0 12px;
+    padding: 10px 12px;
+    background: var(--soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    font-size: 8.8pt;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    page-break-inside: avoid;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0 14px;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--soft); font-weight: 600; }
+
+  .cover { padding: 0 0 14px; border-bottom: 3px solid var(--accent); margin-bottom: 22px; }
+  .cover__sub { font-size: 12pt; color: var(--muted); margin: 0 0 16px; }
+  .cover__meta { font-size: 9.5pt; color: var(--muted); line-height: 1.8; }
+  .cover__meta b { color: var(--ink); font-weight: 600; }
+
+  .note {
+    margin: 10px 0 14px;
+    padding: 9px 12px;
+    background: var(--soft);
+    border-left: 3px solid var(--accent);
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+
+  .note p:last-child { margin-bottom: 0; }
+
+  .ok { color: var(--accent); font-weight: 700; }
+  .break { page-break-before: always; }
+
+  .diagram {
+    font-family: "Cascadia Mono", Consolas, monospace;
+    font-size: 8pt;
+    line-height: 1.35;
+    white-space: pre;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 12px;
+    margin: 10px 0 14px;
+    page-break-inside: avoid;
+  }
+</style>
+</head>
+<body>
+
+<header class="cover">
+  <h1>Red Social</h1>
+  <p class="cover__sub">Microservicios con Spring Boot 4 y Angular 21</p>
+  <p class="cover__meta">
+    <b>Prueba tecnica</b> &middot; Fullstack intermedio Java / Angular<br>
+    <b>Repositorio</b> &middot; https://github.com/AndresFelipeDiazG/social-network<br>
+    <b>Autor</b> &middot; AndresFelipeDiazG &nbsp;&middot;&nbsp; <b>Fecha</b> &middot; 13 de septiembre de 2026
+  </p>
+</header>
+
+<h2>1. Que se entrega</h2>
+
+<p>Los tres requisitos funcionales del enunciado, implementados de extremo a extremo:</p>
+
+<table>
+  <tr><th style="width:38%">Requisito</th><th>Donde vive</th><th style="width:15%">Estado</th></tr>
+  <tr>
+    <td>Autenticacion de usuario (usuario y clave)</td>
+    <td><code>auth-service</code> emite el JWT &middot; pantalla <code>/entrar</code></td>
+    <td class="ok">Completo</td>
+  </tr>
+  <tr>
+    <td>Ver publicaciones (listar las de otros usuarios)</td>
+    <td><code>post-service</code>, <code>GET /api/posts</code> &middot; pantalla <code>/muro</code></td>
+    <td class="ok">Completo</td>
+  </tr>
+  <tr>
+    <td>Crear una publicacion (mensaje, usuario y fecha)</td>
+    <td><code>post-service</code>, <code>POST /api/posts</code> &middot; compositor del muro</td>
+    <td class="ok">Completo</td>
+  </tr>
+</table>
+
+<p>Y los requisitos tecnicos:</p>
+
+<table>
+  <tr><th style="width:38%">Pedido</th><th>Resuelto con</th></tr>
+  <tr><td>Backend en Java con Spring Boot</td><td>Spring Boot 4.1.1, tres servicios independientes</td></tr>
+  <tr><td>Login que entregue el JWT por <code>GET</code></td><td><code>GET /api/auth/login</code> con <code>Authorization: Basic</code></td></tr>
+  <tr><td>Publicaciones: crear (<code>POST</code>) y listar (<code>GET</code>)</td><td><code>post-service</code>, verificando el token localmente</td></tr>
+  <tr><td>Seeder de usuarios al arrancar, con una publicacion cada uno</td><td>Migraciones de Flyway <code>V2__seed_users.sql</code> y <code>V2__seed_posts.sql</code></td></tr>
+  <tr><td>Dockerfile por servicio</td><td>Cuatro, multi-etapa, con usuario sin privilegios y <code>HEALTHCHECK</code></td></tr>
+  <tr><td>PostgreSQL con ORM</td><td>Dos instancias de PostgreSQL 16 + Spring Data JPA (Hibernate 7)</td></tr>
+  <tr><td>Frontend Angular: login, listado y creacion</td><td>Angular 21, componentes autonomos y senales</td></tr>
+  <tr><td>Estado con Signals o NgRx SignalStore</td><td>Las dos cosas: <code>signalStore</code> de <code>@ngrx/signals</code>, construido sobre senales</td></tr>
+  <tr><td><i>Deseable:</i> TypeScript, Swagger, pruebas unitarias, manejo de errores</td><td>TypeScript estricto &middot; Swagger agregado en el gateway &middot; 201 pruebas &middot; <code>ProblemDetail</code> (RFC 7807)</td></tr>
+</table>
+
+<h2>2. Arquitectura</h2>
+
+<div class="diagram">  Navegador
+      |
+      |  http://localhost:4200
+      v
+  +---------------------+
+  |  frontend           |   nginx sirve los estaticos de Angular
+  |  Angular 21 + nginx |   y hace de proxy inverso de /api
+  +----------+----------+
+             |  /api/**
+             v
+  +---------------------+
+  |  api-gateway :8080  |   punto de entrada unico | Swagger agregado
+  +-----+---------+-----+
+        |         |
+        v         v
+  +----------+ +----------+
+  |   auth   | |   post   |   cada uno verifica el JWT por su cuenta
+  |  :8081   | |  :8082   |   (no se llaman entre ellos)
+  +----+-----+ +----+-----+
+       v            v
+  +----------+ +----------+
+  | postgres | | postgres |   una base de datos por servicio
+  |  _auth   | |  _posts  |
+  +----------+ +----------+</div>
+
+<h3>Flujo de la autenticacion</h3>
+
+<ol>
+  <li>El navegador envia <code>GET /api/auth/login</code> con la cabecera <code>Authorization: Basic</code>.</li>
+  <li><code>auth-service</code> busca el usuario, compara el hash BCrypt y firma un JWT HS256 con el secreto compartido.</li>
+  <li>El frontend guarda el token y lo adjunta como <code>Bearer</code> en cada peticion, mediante un interceptor.</li>
+  <li><code>post-service</code> <b>verifica la firma con el mismo secreto, sin preguntar a nadie</b>. No hay llamada entre servicios ni sesion en memoria.</li>
+</ol>
+
+<div class="note">
+  <p><b>Por que la verificacion se repite en cada servicio.</b> El gateway
+  centraliza la entrada, pero si solo el gateway validara el token, cualquiera con
+  acceso a la red interna podria llamar a <code>post-service</code> sin
+  credenciales. Validar una firma es una operacion local de microsegundos: se paga
+  barato y elimina la confianza implicita en la red.</p>
+  <p>Es comprobable: deteniendo <code>auth-service</code>, un token ya emitido
+  sigue funcionando contra <code>post-service</code>.</p>
+</div>
+
+<h2 class="break">3. Instalacion</h2>
+
+<p>Lo unico necesario es Docker. Java, Maven y Node solo hacen falta para desarrollar fuera de contenedores.</p>
+
+<table>
+  <tr><th style="width:30%">Requisito</th><th style="width:22%">Version</th><th>Comprobar</th></tr>
+  <tr><td>Docker</td><td>24 o superior</td><td><code>docker --version</code></td></tr>
+  <tr><td>Docker Compose</td><td>v2</td><td><code>docker compose version</code></td></tr>
+</table>
+
+<h3>Paso 1 &middot; Clonar y crear el archivo de entorno</h3>
+
+<pre>git clone https://github.com/AndresFelipeDiazG/social-network.git
+cd social-network
+cp .env.example .env</pre>
+
+<h3>Paso 2 &middot; Rellenar los tres secretos</h3>
+
+<p>El propio <code>.env</code> indica dentro los comandos para generarlos:</p>
+
+<pre>POSTGRES_AUTH_PASSWORD=...     # openssl rand -base64 24
+POSTGRES_POSTS_PASSWORD=...    # openssl rand -base64 24
+JWT_SECRET=...                 # openssl rand -base64 48</pre>
+
+<div class="note">
+  El <code>.env</code> esta en <code>.gitignore</code> y nunca se sube. En
+  <code>docker-compose.yml</code> los secretos se declaran como
+  <code>${VAR:?mensaje}</code> en lugar de con un valor por defecto: si falta el
+  archivo, Compose aborta diciendo exactamente que hacer. Con un valor por defecto,
+  el fallo apareceria tres capas mas abajo como un error de autenticacion de
+  PostgreSQL, que no explica nada.
+</div>
+
+<h3>Paso 3 &middot; Levantar</h3>
+
+<pre>docker compose up -d --build</pre>
+
+<p>
+  Compose construye las cuatro imagenes y arranca los seis contenedores en orden:
+  primero las dos bases de datos, y cada servicio espera a que la suya responda
+  (<code>depends_on: condition: service_healthy</code>) antes de arrancar. Flyway
+  crea las tablas y siembra los usuarios en el primer arranque. La primera vez
+  tarda unos minutos por la descarga de dependencias; las siguientes son casi
+  inmediatas gracias a la cache de capas de Docker.
+</p>
+
+<pre>docker compose ps        # los seis contenedores en healthy
+docker compose logs -f   # seguir el arranque</pre>
+
+<h2>4. Comprobar que funciona</h2>
+
+<table>
+  <tr><th style="width:34%">Que</th><th>Donde</th></tr>
+  <tr><td><b>Aplicacion</b></td><td>http://localhost:4200</td></tr>
+  <tr><td><b>Swagger, API completa</b></td><td>http://localhost:8080/swagger-ui.html</td></tr>
+  <tr><td>Swagger de <code>auth-service</code></td><td>http://localhost:8081/swagger-ui.html</td></tr>
+  <tr><td>Swagger de <code>post-service</code></td><td>http://localhost:8082/swagger-ui.html</td></tr>
+</table>
+
+<h3>Usuarios predefinidos</h3>
+
+<p>Los crea Flyway al arrancar, con una publicacion cada uno. Comparten contrasena: <code>Password123!</code></p>
+
+<table>
+  <tr><th style="width:22%">Usuario</th><th style="width:26%">Nombre</th><th>Identificador</th></tr>
+  <tr><td><code>acorrea</code></td><td>Ana Correa</td><td><code>11111111-1111-1111-1111-111111111111</code></td></tr>
+  <tr><td><code>jmendoza</code></td><td>Julian Mendoza</td><td><code>22222222-2222-2222-2222-222222222222</code></td></tr>
+  <tr><td><code>lvargas</code></td><td>Lucia Vargas</td><td><code>33333333-3333-3333-3333-333333333333</code></td></tr>
+  <tr><td><code>dcastillo</code></td><td>Diego Castillo</td><td><code>44444444-4444-4444-4444-444444444444</code></td></tr>
+</table>
+
+<p>
+  La pantalla de entrada muestra la cuenta de demostracion al pie: un clic en
+  <i>Usar esta cuenta</i> rellena las dos casillas, y los otros tres usuarios estan
+  a un clic al lado.
+</p>
+
+<h3>Desde la linea de comandos</h3>
+
+<pre>./scripts/smoke-test.sh</pre>
+
+<p>Ocho comprobaciones de extremo a extremo contra el entorno levantado. O a mano:</p>
+
+<pre># Login y token
+curl -u acorrea:Password123! http://localhost:8080/api/auth/login
+
+# Muro (sustituye TOKEN)
+curl -H "Authorization: Bearer TOKEN" http://localhost:8080/api/posts
+
+# Publicar
+curl -X POST http://localhost:8080/api/posts \
+     -H "Authorization: Bearer TOKEN" \
+     -H "Content-Type: application/json" \
+     -d "{\"message\":\"Hola mundo\"}"</pre>
+
+<h2 class="break">5. La API</h2>
+
+<table>
+  <tr><th style="width:11%">Metodo</th><th style="width:27%">Ruta</th><th>Descripcion</th></tr>
+  <tr><td><code>GET</code></td><td><code>/api/auth/login</code></td><td>Login con <code>Authorization: Basic</code>. Devuelve el JWT. <b>La que usa el frontend.</b></td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/auth/login</code></td><td>Login con las credenciales en el cuerpo. Mismo resultado.</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/auth/me</code></td><td>Usuario correspondiente al token actual.</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/posts</code></td><td>Lista publicaciones. Parametros <code>scope</code> (<code>OTHERS</code> por defecto, <code>ALL</code>, <code>MINE</code>), <code>page</code> y <code>size</code>.</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/posts</code></td><td>Crea una publicacion. El autor sale del token; la fecha, del instante de guardado si no se envia.</td></tr>
+  <tr><td><code>PUT</code></td><td><code>/api/posts/{id}/like</code></td><td>Marca la publicacion con me gusta. Idempotente.</td></tr>
+  <tr><td><code>DELETE</code></td><td><code>/api/posts/{id}/like</code></td><td>Retira el me gusta. Tambien idempotente.</td></tr>
+  <tr><td><code>POST</code></td><td><code>/api/posts/images</code></td><td>Sube una imagen (multipart, maximo 2 MB) y devuelve su identificador.</td></tr>
+  <tr><td><code>GET</code></td><td><code>/api/posts/images/{id}</code></td><td>Devuelve los bytes de la imagen. Publica, ver la nota de abajo.</td></tr>
+</table>
+
+<div class="note">
+  <b>Hay dos variantes de login a proposito.</b> El enunciado pide
+  <code>GET</code>; la convencion dice que una operacion con credenciales deberia
+  ser <code>POST</code>. Se implementan las dos, con la misma logica detras. En
+  ambas, las credenciales viajan en la cabecera y nunca en la URL, asi que no
+  quedan registradas en los logs del servidor, en el historial del navegador ni en
+  la cabecera <code>Referer</code>.
+</div>
+
+<div class="note">
+  <p><b>Los me gusta son idempotentes por diseno del esquema.</b> La tabla
+  <code>post_likes</code> tiene clave primaria <code>(post_id, user_id)</code> y la
+  insercion usa <code>ON CONFLICT DO NOTHING</code>: marcar dos veces deja el mismo
+  estado que marcar una. Comprobar antes de insertar dejaria una ventana entre la
+  lectura y la escritura en la que dos peticiones simultaneas chocarian.</p>
+  <p><b>La descarga de imagenes es publica a proposito.</b> El navegador pide las
+  imagenes con una etiqueta <code>img</code>, que no envia la cabecera
+  <code>Authorization</code>. El identificador es un UUID aleatorio, de modo que la
+  direccion misma hace de credencial y solo se sirve lo que ya esta publicado. La
+  alternativa (descargar con fetch y construir un blob) complica el cliente sin
+  ganar nada real aqui.</p>
+</div>
+
+<h3>Errores</h3>
+
+<p>Todos los servicios responden en formato <code>ProblemDetail</code> (RFC 7807), el estandar que Spring implementa de serie:</p>
+
+<pre>{ "type": "about:blank",
+  "title": "Credenciales invalidas",
+  "status": 401,
+  "detail": "Usuario o contrasena incorrectos" }</pre>
+
+<p>
+  Un usuario inexistente y una contrasena incorrecta devuelven <b>exactamente el
+  mismo error</b>, para no confirmar que usuarios existen. Las excepciones no
+  previstas se registran completas en el log y devuelven un mensaje generico:
+  propagar el detalle expondria clases, consultas y rutas internas.
+</p>
+
+<h2>6. El frontend</h2>
+
+<table>
+  <tr><th style="width:20%">Pantalla</th><th style="width:18%">Ruta</th><th>Contenido</th></tr>
+  <tr><td>Entrada</td><td><code>/entrar</code></td><td>Usuario y contrasena, con boton para revelarla, y la cuenta de demostracion al pie.</td></tr>
+  <tr><td>Muro</td><td><code>/muro</code></td><td>Publicaciones, compositor, filtros, buscador y carga incremental.</td></tr>
+</table>
+
+<p>
+  Angular 21 con componentes autonomos, senales y deteccion de cambios sin Zone.js.
+  Las dos pantallas se cargan en diferido: el arranque baja 66 kB comprimidos mas
+  la pantalla que toque, no las dos.
+</p>
+
+<h3>Estado</h3>
+
+<p>Dos <code>signalStore</code> de <code>@ngrx/signals</code>, con alcance distinto a proposito:</p>
+
+<ul>
+  <li>
+    <b><code>AuthStore</code></b>, en la raiz. Token, usuario y sesion persistida en
+    <code>localStorage</code> junto a su instante de caducidad. Una sesion vencida
+    se descarta al arrancar, sin esperar al primer 401: asi no se pinta el muro un
+    instante antes de rebotar al login.
+  </li>
+  <li>
+    <b><code>PostsStore</code></b>, provisto en la pagina del muro. Publicaciones,
+    filtro, pagina y errores. Se destruye con el componente, de modo que al salir no
+    queda el muro de la sesion anterior en memoria.
+  </li>
+</ul>
+
+<h3>Decisiones de la interfaz</h3>
+
+<ul>
+  <li>
+    <b>El filtro por defecto es «de otros».</b> Es literalmente lo que pide el
+    enunciado. <i>Todas</i> y <i>Mias</i> quedan como filtro explicito.
+  </li>
+  <li>
+    <b>Paginado incremental, no paginas numeradas.</b> En un muro que se recorre
+    hacia abajo, «ir a la pagina 3» no significa nada; el boton <i>Cargar mas
+    publicaciones</i> con el contador <i>Mostrando X de Y</i> si. Descarta repetidas
+    por <code>id</code>, porque una publicacion nueva desplaza la ventana entre dos
+    peticiones.
+  </li>
+  <li>
+    <b>El buscador filtra sobre lo ya cargado, y el texto lo dice.</b> El backend no
+    expone busqueda; fingir que busca en todo el muro seria mentir en la interfaz.
+  </li>
+  <li>
+    <b>Al publicar desde «de otros» se pasa a «todas».</b> La propia publicacion no
+    cabe en ese filtro y el usuario espera verla.
+  </li>
+  <li>
+    <b>Tema claro, oscuro y del sistema.</b> Los tokens son propiedades
+    personalizadas de CSS: cambiar de tema no recompila nada, y el modo «sistema» no
+    escucha eventos, deja mandar a <code>prefers-color-scheme</code>.
+  </li>
+  <li>
+    <b>Dos columnas en pantalla ancha.</b> El muro no llena una pantalla de
+    1440 px por si solo. La columna lateral se oculta por debajo de 1000 px y el
+    muro se queda en 640, que es el ancho de linea comodo de leer.
+  </li>
+  <li>
+    <b>Emojis en el compositor.</b> Paleta corta y fija, que inserta donde este el
+    cursor y no al final. Un catalogo completo pide busqueda, categorias y varios
+    cientos de kilobytes de datos para escribir un mensaje de 280 caracteres.
+  </li>
+  <li>
+    <b>La barra superior solo muestra el avatar.</b> Cerrar sesion vive dentro del
+    menu que se despliega al pulsarlo: la accion destructiva deja de estar a un
+    clic de distancia por accidente.
+  </li>
+  <li>
+    <b>Toda la interfaz usa Inter</b>, servida desde el propio bundle y no desde una
+    CDN: la aplicacion tiene que verse igual sin salida a internet.
+  </li>
+  <li>
+    <b>Los errores se muestran tal como llegan del backend.</b> El mensaje ya viene
+    redactado alli, en un solo idioma y un solo sitio.
+  </li>
+</ul>
+
+<h3>Configuracion en tiempo de ejecucion</h3>
+
+<p>
+  Angular compila a JavaScript estatico y no puede leer variables de entorno. En
+  lugar de recompilar la imagen por entorno, el contenedor genera
+  <code>config.js</code> con <code>envsubst</code> antes de arrancar nginx, y la
+  aplicacion lo lee al iniciar. <b>La misma imagen sirve para cualquier
+  entorno:</b> cambiar el nombre de la aplicacion o el tamano de pagina es
+  reiniciar el contenedor, no volver a construirlo.
+</p>
+
+<h2 class="break">7. Base de datos</h2>
+
+<p>
+  Dos instancias de PostgreSQL 16, una por servicio. No comparten nada: ni esquemas
+  cruzados, ni una base comun con dos usuarios.
+</p>
+
+<table>
+  <tr><th style="width:28%">Base de datos</th><th style="width:20%">Puerto</th><th>Tablas</th></tr>
+  <tr><td><code>social_auth</code></td><td>5433</td><td><code>users</code></td></tr>
+  <tr><td><code>social_posts</code></td><td>5434</td><td><code>posts</code></td></tr>
+</table>
+
+<div class="note">
+  <b>No hay clave ajena entre <code>posts</code> y <code>users</code>, y no es un
+  descuido.</b> Viven en bases de datos distintas y PostgreSQL no puede referenciar
+  entre ellas. El vinculo son los UUID fijos, iguales en las dos siembras. Es la
+  consecuencia visible &mdash;y el coste real&mdash; de tener una base de datos por
+  servicio: se gana aislamiento y se pierde la integridad referencial declarativa,
+  que pasa a ser responsabilidad de la aplicacion.
+</div>
+
+<p>
+  El nombre del autor se <b>copia</b> en cada publicacion en lugar de consultarse al
+  leer. Una publicacion es un registro historico: el nombre que tenia su autor en
+  ese momento es el dato correcto, igual que una factura guarda la direccion de
+  entonces y no la actual. Y evita que listar el muro exija una llamada al otro
+  servicio.
+</p>
+
+<h3>Scripts de la carpeta <code>db/</code></h3>
+
+<table>
+  <tr><th style="width:28%">Archivo</th><th>Contenido</th></tr>
+  <tr><td><code>db/auth.sql</code></td><td>Tabla <code>users</code> y los cuatro usuarios de prueba.</td></tr>
+  <tr><td><code>db/posts.sql</code></td><td>Tabla <code>posts</code>, sus indices y una publicacion por usuario.</td></tr>
+</table>
+
+<pre>psql -h localhost -p 5433 -U auth_service -d social_auth  -f db/auth.sql
+psql -h localhost -p 5434 -U post_service -d social_posts -f db/posts.sql</pre>
+
+<div class="note">
+  <b>Estos dos archivos son una copia consciente.</b> La fuente de verdad son las
+  migraciones de Flyway que viven dentro de cada servicio, y son las que se ejecutan
+  de verdad al arrancar. Los scripts de <code>db/</code> son su vista consolidada,
+  porque el enunciado pide un script suelto como entregable. Se documenta en lugar de
+  disimularse: en un proyecto real solo existirian las migraciones. Llevan
+  <code>IF NOT EXISTS</code> y <code>ON CONFLICT DO NOTHING</code>, asi que se pueden
+  ejecutar dos veces sin error.
+</div>
+
+<h2>8. Pruebas</h2>
+
+<table>
+  <tr><th style="width:28%">Modulo</th><th style="width:16%">Pruebas</th><th>Que cubren</th></tr>
+  <tr><td><code>auth-service</code></td><td>38</td><td>Dominio, hash de contrasenas, emision del token, controlador y seguridad.</td></tr>
+  <tr><td><code>post-service</code></td><td>70</td><td>Validacion del mensaje, fechas, filtros del muro, paginacion y lectura del token.</td></tr>
+  <tr><td><code>api-gateway</code></td><td>19</td><td>Enrutado, propagacion de cabeceras y los metodos permitidos por CORS.</td></tr>
+  <tr><td><code>frontend</code></td><td>74</td><td>Los dos stores, formato de fechas, traduccion de errores y render de las dos pantallas.</td></tr>
+  <tr><td><b>Total</b></td><td><b>201</b></td><td></td></tr>
+</table>
+
+<pre># Backend, por servicio
+cd backend/auth-service
+./mvnw test      # unitarias y de slice: rapidas, sin Docker
+./mvnw verify    # ademas las de integracion: levantan un PostgreSQL real
+
+# Frontend
+cd frontend
+npm test         # Vitest, sin navegador</pre>
+
+<div class="note">
+  <b>La separacion entre <code>*Test</code> y <code>*IT</code> es deliberada.</b> Las
+  unitarias corren con surefire y no necesitan Docker; las de integracion corren con
+  failsafe y levantan PostgreSQL con Testcontainers. Mezclarlas obligaria a tener
+  Docker para ejecutar cualquier prueba, que es exactamente como acaba
+  desactivandose una suite entera.
+</div>
+
+<h2 class="break">9. Estructura del repositorio</h2>
+
+<div class="diagram">social-network/
++-- docker-compose.yml          orquestacion de los seis contenedores
++-- .env.example                plantilla de configuracion
++-- README.md                   documentacion tecnica
++-- backend/
+|   +-- auth-service/           autenticacion y emision de JWT
+|   +-- post-service/           publicaciones
+|   +-- api-gateway/            punto de entrada unico y Swagger agregado
++-- frontend/                   Angular 21 + NgRx SignalStore
++-- db/                         scripts SQL: esquema y usuarios de prueba
++-- scripts/                    prueba de humo de extremo a extremo
++-- docs/                       este documento</div>
+
+<p>Dentro de cada servicio del backend, la misma division:</p>
+
+<div class="diagram">src/main/java/com/social/&lt;servicio&gt;/
++-- domain/                     sin una sola importacion de Spring
+|   +-- model/                  entidades y objetos de valor
+|   +-- port/                   interfaces que el dominio necesita
+|   +-- usecase/                la logica de negocio
+|   +-- exception/
++-- infrastructure/             todo lo que depende de un framework
+    +-- persistence/            JPA: entidades, repositorios, adaptadores
+    +-- security/               JWT, filtros, configuracion
+    +-- web/                    controladores y DTO
+    +-- config/</div>
+
+<p>
+  La regla de dependencia va en una sola direccion: <code>infrastructure</code>
+  conoce <code>domain</code>, nunca al contrario. Es comprobable de un vistazo,
+  porque en <code>domain/</code> no hay ninguna anotacion de Spring. Eso es lo que
+  permite probar la logica de negocio sin arrancar un contexto de aplicacion, y la
+  razon de que la suite unitaria tarde segundos.
+</p>
+
+<h3>Monorepo, una rama por modulo</h3>
+
+<p>
+  Los tres servicios y el frontend viven en un repositorio. Con cuatro modulos que
+  se despliegan juntos y comparten el <code>docker-compose</code>, cuatro
+  repositorios obligarian a coordinar cuatro <i>pull requests</i> para un cambio de
+  contrato. El historial usa Conventional Commits, con una rama por modulo integrada
+  mediante <i>pull request</i> y <code>--no-ff</code>, de modo que en el grafo se
+  distingue donde empieza y donde acaba cada modulo.
+</p>
+
+<h2>10. Lo que se dejo fuera, y por que</h2>
+
+<ul>
+  <li>
+    <b>Sin refresco de token.</b> El JWT dura una hora y al caducar la sesion se
+    cierra avisando. Un <i>refresh token</i> exige almacenamiento, revocacion y
+    rotacion: es la mitad de un servidor de identidad, y sobra aqui.
+  </li>
+  <li>
+    <b>Sin registro de usuarios.</b> El enunciado pide autenticar, no crear cuentas.
+    Los usuarios los siembra Flyway.
+  </li>
+  <li>
+    <b>Las imagenes se guardan en la base de datos, no en un volumen.</b> Es una
+    decision de entrega: asi el proyecto levanta con un solo comando y queda limpio
+    con <code>docker compose down -v</code>, sin rutas montadas ni permisos que
+    ajustar. Con volumen real de imagenes, lo correcto seria un almacen de objetos
+    y guardar en la fila solo la referencia.
+  </li>
+  <li>
+    <b>El token se guarda en <code>localStorage</code>.</b> Queda expuesto a XSS. La
+    alternativa correcta es una cookie <code>HttpOnly</code> con
+    <code>SameSite</code>, pero eso exige que el backend la emita, y el contrato
+    pedido devuelve el token en el cuerpo de la respuesta. Es una limitacion
+    conocida, no un descuido.
+  </li>
+  <li>
+    <b>Una sola suite de integracion, no tambien e2e.</b> Con el tiempo disponible,
+    las de integracion cubren mas riesgo por minuto invertido: verifican el contrato
+    real contra PostgreSQL, mientras una suite e2e habria requerido levantar los seis
+    contenedores y un navegador para comprobar lo mismo desde mas arriba.
+  </li>
+</ul>
+
+</body>
+</html>

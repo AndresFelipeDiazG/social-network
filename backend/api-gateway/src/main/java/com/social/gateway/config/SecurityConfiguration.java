@@ -8,6 +8,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -55,6 +56,9 @@ public class SecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(PUBLIC_PATHS).permitAll()
+                        // Igual que en post-service: las imagenes son publicas
+                        // porque el navegador no manda el token al pedirlas.
+                        .requestMatchers(HttpMethod.GET, "/api/posts/images/**").permitAll()
                         .requestMatchers("/api/posts/**").authenticated()
                         .anyRequest().denyAll())
                 .oauth2ResourceServer(server -> server.jwt(Customizer.withDefaults()))
@@ -84,7 +88,10 @@ public class SecurityConfiguration {
     CorsConfigurationSource corsConfigurationSource(GatewayProperties properties) {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(originsOf(properties));
-        configuration.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+        // PUT y DELETE son los de me gusta. El navegador envia la cabecera Origin en
+        // todo lo que no sea GET o HEAD, incluso en peticiones del mismo origen, asi
+        // que el filtro de CORS las evalua y un metodo ausente aqui responde 403.
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setMaxAge(Duration.ofHours(1));
 

@@ -7,13 +7,12 @@ set -eu
 : "${API_BASE_URL:=/api}"
 : "${APP_NAME:=Red Social}"
 : "${POSTS_PAGE_SIZE:=20}"
-: "${SESSION_EXPIRY_WARNING_SECONDS:=60}"
 
-export API_BASE_URL APP_NAME POSTS_PAGE_SIZE SESSION_EXPIRY_WARNING_SECONDS
+export API_BASE_URL APP_NAME POSTS_PAGE_SIZE
 
 # La lista explicita de variables es obligatoria. Sin ella, envsubst sustituye
 # todo lo que parezca $algo y destroza cualquier JavaScript que use el simbolo.
-envsubst '${API_BASE_URL} ${APP_NAME} ${POSTS_PAGE_SIZE} ${SESSION_EXPIRY_WARNING_SECONDS}' \
+envsubst '${API_BASE_URL} ${APP_NAME} ${POSTS_PAGE_SIZE}' \
   < /usr/share/nginx/html/config.template.js \
   > /usr/share/nginx/html/config.js
 

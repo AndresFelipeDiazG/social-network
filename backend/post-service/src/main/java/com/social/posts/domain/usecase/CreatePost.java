@@ -26,6 +26,11 @@ public class CreatePost {
     }
 
     public Post create(PostAuthor author, String message, Instant publishedAt) {
+        return create(author, message, publishedAt, null);
+    }
+
+    /** El identificador de imagen viene de una subida previa; aqui solo se guarda. */
+    public Post create(PostAuthor author, String message, Instant publishedAt, UUID imageId) {
         PostMessage validatedMessage = new PostMessage(message);
 
         Instant now = clock.instant();
@@ -38,6 +43,7 @@ public class CreatePost {
             throw new PublicationDateInFutureException(effectiveDate);
         }
 
-        return posts.save(new Post(UUID.randomUUID(), validatedMessage, author, effectiveDate));
+        return posts.save(
+                new Post(UUID.randomUUID(), validatedMessage, author, effectiveDate, imageId));
     }
 }

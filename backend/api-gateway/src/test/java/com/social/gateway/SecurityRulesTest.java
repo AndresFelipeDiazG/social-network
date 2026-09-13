@@ -1,7 +1,10 @@
 package com.social.gateway;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
@@ -103,6 +106,43 @@ class SecurityRulesTest {
                 .andExpect(status().isUnauthorized());
 
         mockMvc.perform(get("/interno/metricas").header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken()))
+                .andExpect(status().isForbidden());
+    }
+
+    /**
+     * El navegador envia la cabecera Origin en todo lo que no sea GET o HEAD,
+     * incluso cuando la peticion es del mismo origen. Un metodo que falte en la
+     * configuracion de CORS se responde con 403 antes de llegar al servicio, y
+     * curl no lo detecta porque no envia esa cabecera.
+     */
+    @Test
+    void allowsTheMethodsThatTheFrontendUses() throws Exception {
+        UUID postId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> mockMvc.perform(put("/api/posts/{id}/like", postId)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken())
+                .header(HttpHeaders.ORIGIN, "http://localhost:4200")))
+                .hasMessageContaining(POST_SERVICE);
+
+        assertThatThrownBy(() -> mockMvc.perform(delete("/api/posts/{id}/like", postId)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken())
+                .header(HttpHeaders.ORIGIN, "http://localhost:4200")))
+                .hasMessageContaining(POST_SERVICE);
+    }
+
+    @Test
+    void answersThePreflightOfThoseMethods() throws Exception {
+        mockMvc.perform(options("/api/posts/{id}/like", UUID.randomUUID())
+                        .header(HttpHeaders.ORIGIN, "http://localhost:4200")
+                        .header("Access-Control-Request-Method", "PUT"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void rejectsAnOriginThatIsNotTheFrontend() throws Exception {
+        mockMvc.perform(get("/api/posts")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken())
+                        .header(HttpHeaders.ORIGIN, "http://otro-sitio.example"))
                 .andExpect(status().isForbidden());
     }
 

@@ -16,7 +16,8 @@ final class PostPersistenceMapper {
                 post.author().id(),
                 post.author().username(),
                 post.author().displayName(),
-                post.publishedAt());
+                post.publishedAt(),
+                post.imageId());
     }
 
     static Post toDomain(PostJpaEntity entity) {
@@ -24,6 +25,7 @@ final class PostPersistenceMapper {
                 entity.getId(),
                 new PostMessage(entity.getMessage()),
                 new PostAuthor(entity.getAuthorId(), entity.getAuthorUsername(), entity.getAuthorDisplayName()),
-                entity.getPublishedAt());
+                entity.getPublishedAt(),
+                entity.getImageId());
     }
 }

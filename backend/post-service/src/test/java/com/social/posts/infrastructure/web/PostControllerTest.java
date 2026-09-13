@@ -6,8 +6,10 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -17,12 +19,18 @@ import com.social.posts.domain.model.Post;
 import com.social.posts.domain.model.PostAuthor;
 import com.social.posts.domain.model.PostMessage;
 import com.social.posts.domain.model.PostPage;
+import com.social.posts.domain.model.LikeSummary;
+import com.social.posts.domain.usecase.CountLikes;
 import com.social.posts.domain.usecase.CreatePost;
+import com.social.posts.domain.usecase.LikePost;
 import com.social.posts.domain.usecase.ListPosts;
+import com.social.posts.domain.usecase.UnlikePost;
 import com.social.posts.infrastructure.security.SecurityConfiguration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -48,6 +56,20 @@ class PostControllerTest {
 
     @MockitoBean
     private ListPosts listPosts;
+
+    @MockitoBean
+    private LikePost likePost;
+
+    @MockitoBean
+    private UnlikePost unlikePost;
+
+    @MockitoBean
+    private CountLikes countLikes;
+
+    @BeforeEach
+    void withoutLikes() {
+        when(countLikes.of(any(), any())).thenReturn(Map.of());
+    }
 
     @Test
     void returnsThePageOfPostsForTheViewer() throws Exception {
@@ -120,7 +142,7 @@ class PostControllerTest {
 
     @Test
     void createsAPostAndReturns201() throws Exception {
-        when(createPost.create(any(), any(), any()))
+        when(createPost.create(any(), any(), any(), any()))
                 .thenReturn(postBy(VIEWER, "acorrea", "Ana Correa", "Buenos dias"));
 
         mockMvc.perform(post("/api/posts")
@@ -136,7 +158,7 @@ class PostControllerTest {
     // nombre de otro ni enviando el campo.
     @Test
     void takesTheAuthorFromTheToken() throws Exception {
-        when(createPost.create(any(), any(), any()))
+        when(createPost.create(any(), any(), any(), any()))
                 .thenReturn(postBy(VIEWER, "acorrea", "Ana Correa", "Buenos dias"));
 
         mockMvc.perform(post("/api/posts")
@@ -146,12 +168,13 @@ class PostControllerTest {
                 .andExpect(status().isCreated());
 
         verify(createPost).create(
-                eq(new PostAuthor(VIEWER, "acorrea", "Ana Correa")), eq("Buenos dias"), isNull());
+                eq(new PostAuthor(VIEWER, "acorrea", "Ana Correa")), eq("Buenos dias"), isNull(),
+                isNull());
     }
 
     @Test
     void forwardsTheRequestedPublicationDate() throws Exception {
-        when(createPost.create(any(), any(), any()))
+        when(createPost.create(any(), any(), any(), any()))
                 .thenReturn(postBy(VIEWER, "acorrea", "Ana Correa", "Buenos dias"));
 
         mockMvc.perform(post("/api/posts")
@@ -160,7 +183,7 @@ class PostControllerTest {
                         .content("{\"message\": \"Buenos dias\", \"publishedAt\": \"2026-09-13T10:00:00Z\"}"))
                 .andExpect(status().isCreated());
 
-        verify(createPost).create(any(), eq("Buenos dias"), eq(PUBLISHED_AT));
+        verify(createPost).create(any(), eq("Buenos dias"), eq(PUBLISHED_AT), isNull());
     }
 
     @Test
@@ -200,6 +223,61 @@ class PostControllerTest {
         mockMvc.perform(post("/api/posts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"message\": \"Buenos dias\"}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void marksAPostWithALike() throws Exception {
+        UUID postId = UUID.randomUUID();
+
+        mockMvc.perform(put("/api/posts/{id}/like", postId).with(viewerToken()))
+                .andExpect(status().isNoContent());
+
+        verify(likePost).like(postId, VIEWER);
+    }
+
+    @Test
+    void removesTheLike() throws Exception {
+        UUID postId = UUID.randomUUID();
+
+        mockMvc.perform(delete("/api/posts/{id}/like", postId).with(viewerToken()))
+                .andExpect(status().isNoContent());
+
+        verify(unlikePost).unlike(postId, VIEWER);
+    }
+
+    // El cliente no puede deducir el recuento ni si ya marco: los dos vienen dados.
+    @Test
+    void reportsTheLikeCountAndWhetherTheViewerAlreadyLiked() throws Exception {
+        Post post = postBy(SOMEONE_ELSE, "jmendoza", "Julian Mendoza", "De otro");
+        when(listPosts.list(any(), any(), any())).thenReturn(new PostPage(List.of(post), 0, 20, 1));
+        when(countLikes.of(List.of(post.id()), VIEWER)).thenReturn(
+                Map.of(post.id(), new LikeSummary(3, true)));
+
+        mockMvc.perform(get("/api/posts").with(viewerToken()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].likes").value(3))
+                .andExpect(jsonPath("$.content[0].likedByMe").value(true));
+    }
+
+    @Test
+    void aPostWithoutLikesReportsZero() throws Exception {
+        Post post = postBy(SOMEONE_ELSE, "jmendoza", "Julian Mendoza", "De otro");
+        when(listPosts.list(any(), any(), any())).thenReturn(new PostPage(List.of(post), 0, 20, 1));
+
+        mockMvc.perform(get("/api/posts").with(viewerToken()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].likes").value(0))
+                .andExpect(jsonPath("$.content[0].likedByMe").value(false));
+    }
+
+    @Test
+    void rejectsTheLikeEndpointsWithoutAToken() throws Exception {
+        UUID postId = UUID.randomUUID();
+
+        mockMvc.perform(put("/api/posts/{id}/like", postId))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(delete("/api/posts/{id}/like", postId))
                 .andExpect(status().isUnauthorized());
     }
 

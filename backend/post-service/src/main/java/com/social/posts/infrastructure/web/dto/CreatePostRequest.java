@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
+import java.util.UUID;
 
 public record CreatePostRequest(
 
@@ -16,5 +17,8 @@ public record CreatePostRequest(
 
         @Schema(description = "Opcional. Si se omite se usa el instante de guardado.",
                 example = "2026-09-13T10:00:00Z")
-        Instant publishedAt) {
+        Instant publishedAt,
+
+        @Schema(description = "Opcional. Identificador devuelto por POST /api/posts/images.")
+        UUID imageId) {
 }
