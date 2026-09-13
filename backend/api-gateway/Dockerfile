@@ -1,6 +1,6 @@
-# Construccion en dos etapas. La primera necesita Maven y el JDK completo; la
-# imagen final solo lleva el JRE y el jar, lo que baja el tamaño de unos 800 MB
-# a unos 200 MB y saca el compilador de la superficie de ataque.
+# Construccion en dos etapas. La imagen de Maven con el JDK pesa 802 MB y la del
+# JRE 287 MB: la final solo lleva el JRE y el jar, sin compilador, sin JDK y sin
+# codigo fuente dentro.
 
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /build
