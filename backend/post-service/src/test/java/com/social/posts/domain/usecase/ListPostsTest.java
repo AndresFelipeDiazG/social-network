@@ -25,12 +25,12 @@ class ListPostsTest {
     private final ListPosts listPosts = new ListPosts(posts);
 
     @Test
-    void fallsBackToAllWhenNoScopeIsGiven() {
+    void fallsBackToOthersWhenNoScopeIsGiven() {
         when(posts.findBy(any(), any(), any())).thenReturn(PostPage.empty(FIRST_PAGE));
 
         listPosts.list(null, VIEWER, FIRST_PAGE);
 
-        verify(posts).findBy(eq(FeedScope.ALL), eq(VIEWER), eq(FIRST_PAGE));
+        verify(posts).findBy(eq(FeedScope.OTHERS), eq(VIEWER), eq(FIRST_PAGE));
     }
 
     @ParameterizedTest

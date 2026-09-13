@@ -14,9 +14,9 @@ public class ListPosts {
         this.posts = posts;
     }
 
-    // El defecto es ALL y no OTHERS: ocultar una publicacion propia justo despues
-    // de crearla se percibe como un fallo. El filtro OTHERS queda disponible.
+    // El defecto es OTHERS: el muro muestra las publicaciones de los demas usuarios.
+    // ALL y MINE quedan disponibles como filtro explicito.
     public PostPage list(FeedScope scope, UUID viewerId, PageRequest pageRequest) {
-        return posts.findBy(scope == null ? FeedScope.ALL : scope, viewerId, pageRequest);
+        return posts.findBy(scope == null ? FeedScope.OTHERS : scope, viewerId, pageRequest);
     }
 }
