@@ -135,12 +135,40 @@
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
+			<!-- Resuelve la ruta del jar de cada dependencia en una propiedad
+			     groupId:artifactId:type, que surefire necesita para el agente. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>properties</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Mockito necesita engancharse a la JVM como agente para crear mocks.
+			     Sin declararlo lo hace por su cuenta, y las JDK recientes avisan de
+			     que van a dejar de permitirlo: entonces las pruebas romperian. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>-javaagent:${org.mockito:mockito-core:jar} -Xshare:off</argLine>
+				</configuration>
+			</plugin>
+
 			<!-- Separa las pruebas por coste: surefire ejecuta las unitarias y de
 			     slice en 'mvn test' sin necesidad de Docker; failsafe ejecuta las
 			     *IT en 'mvn verify', que si levanta contenedores. -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
+				<configuration>
+					<argLine>-javaagent:${org.mockito:mockito-core:jar} -Xshare:off</argLine>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>
