@@ -37,18 +37,24 @@ public class PostJpaEntity {
     @Column(name = "published_at", nullable = false)
     private Instant publishedAt;
 
+    // Nula en la mayoria de publicaciones. La clave ajena hacia post_images la
+    // declara la migracion; aqui basta el identificador.
+    @Column(name = "image_id")
+    private UUID imageId;
+
     protected PostJpaEntity() {
         // Requerido por JPA.
     }
 
     PostJpaEntity(UUID id, String message, UUID authorId, String authorUsername,
-            String authorDisplayName, Instant publishedAt) {
+            String authorDisplayName, Instant publishedAt, UUID imageId) {
         this.id = id;
         this.message = message;
         this.authorId = authorId;
         this.authorUsername = authorUsername;
         this.authorDisplayName = authorDisplayName;
         this.publishedAt = publishedAt;
+        this.imageId = imageId;
     }
 
     // Solo por identificador: con campos mutables, dos referencias a la misma fila

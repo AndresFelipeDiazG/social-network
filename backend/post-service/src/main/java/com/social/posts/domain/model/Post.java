@@ -3,7 +3,13 @@ package com.social.posts.domain.model;
 import java.time.Instant;
 import java.util.UUID;
 
-public record Post(UUID id, PostMessage message, PostAuthor author, Instant publishedAt) {
+public record Post(UUID id, PostMessage message, PostAuthor author, Instant publishedAt,
+        UUID imageId) {
+
+    /** Publicacion sin imagen, que es el caso corriente. */
+    public Post(UUID id, PostMessage message, PostAuthor author, Instant publishedAt) {
+        this(id, message, author, publishedAt, null);
+    }
 
     public Post {
         if (id == null) {
@@ -18,6 +24,10 @@ public record Post(UUID id, PostMessage message, PostAuthor author, Instant publ
         if (publishedAt == null) {
             throw new IllegalArgumentException("La fecha de publicacion es obligatoria");
         }
+    }
+
+    public boolean hasImage() {
+        return imageId != null;
     }
 
     public boolean belongsTo(UUID userId) {
