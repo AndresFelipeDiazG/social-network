@@ -5,6 +5,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -38,6 +39,10 @@ public class SecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(PUBLIC_PATHS).permitAll()
+                        // Las imagenes las pide el navegador con una etiqueta img, que
+                        // no envia cabecera Authorization. El identificador es un UUID
+                        // aleatorio: la direccion misma hace de credencial.
+                        .requestMatchers(HttpMethod.GET, "/api/posts/images/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(server -> server.jwt(Customizer.withDefaults()))
                 .build();

@@ -10,12 +10,14 @@ set -eu
 
 export API_BASE_URL APP_NAME POSTS_PAGE_SIZE
 
+# La plantilla vive fuera de la raiz publica: no se sirve y sobrevive al arranque.
+# Borrarla despues de generar config.js dejaba el contenedor sin poder reiniciarse.
+#
 # La lista explicita de variables es obligatoria. Sin ella, envsubst sustituye
 # todo lo que parezca $algo y destroza cualquier JavaScript que use el simbolo.
 envsubst '${API_BASE_URL} ${APP_NAME} ${POSTS_PAGE_SIZE}' \
-  < /usr/share/nginx/html/config.template.js \
+  < /usr/share/nginx/config.template.js \
   > /usr/share/nginx/html/config.js
 
-rm -f /usr/share/nginx/html/config.template.js
 
 echo "[40-app-config] config.js generado con apiBaseUrl=${API_BASE_URL}"
