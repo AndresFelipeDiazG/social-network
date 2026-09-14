@@ -22,7 +22,7 @@ COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 # La imagen oficial de nginx ejecuta todo script de /docker-entrypoint.d antes
 # de arrancar. Ahi se genera config.js a partir de las variables de entorno, de
 # modo que la MISMA imagen sirve para cualquier entorno sin recompilar.
-COPY docker/config.template.js /usr/share/nginx/html/config.template.js
+COPY docker/config.template.js /usr/share/nginx/config.template.js
 COPY docker/40-app-config.sh /docker-entrypoint.d/40-app-config.sh
 RUN chmod +x /docker-entrypoint.d/40-app-config.sh
 
